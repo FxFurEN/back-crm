@@ -1,4 +1,9 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { hash } from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -32,5 +37,17 @@ export class UsersService {
 
     const { ...result } = newUser;
     return result;
+  }
+
+  async getUser(query: Partial<UserDto>) {
+    const users = await this.database
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.email, query.email))
+      .execute();
+
+    if (users.length === 0) throw new NotFoundException('User not found');
+
+    return users[0];
   }
 }
