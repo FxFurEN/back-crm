@@ -27,8 +27,20 @@ export class AuthService {
     );
 
     const tokenPayload: TokenPayload = {
-      userId: user.id.toHexString(),
+      userId: user.id,
     };
+
+    const accessToken = this.jwtService.sign(tokenPayload, {
+      secret: this.configService.getOrThrow('JWT_ACCESS_TOKEN_SECRET'),
+      expiresIn: `${this.configService.getOrThrow(
+        'JWT_ACCESS_TOKEN_EXPIRATION_MS',
+      )}ms`,
+    });
+    response.cookie('Authentication', accessToken, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      expires: expiresAccessToken,
+    });
   }
 
   async verifyUser(email: string, password: string) {
