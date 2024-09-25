@@ -1,0 +1,16 @@
+import { Controller, Post, Res, UseGuards } from '@nestjs/common';
+import { UserDto } from 'src/users/dto/user.dto';
+import { CurrentUser } from './current-user.decorator';
+import { LocalAuthGuard } from './guards/local-auth.guard';
+
+@Controller('auth')
+export class AuthController {
+  @Post('login')
+  @UseGuards(LocalAuthGuard)
+  async login(
+    @CurrentUser() user: UserDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    await this.authService.login(user, response);
+  }
+}
