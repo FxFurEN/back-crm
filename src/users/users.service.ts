@@ -39,15 +39,19 @@ export class UsersService {
     return result;
   }
 
+  async getUsers() {
+    return this.database.select().from(schema.users);
+  }
+
   async getUser(query: Partial<UserDto>) {
-    const users = await this.database
+    const user = await this.database
       .select()
       .from(schema.users)
       .where(eq(schema.users.email, query.email))
       .execute();
 
-    if (users.length === 0) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException('User not found');
 
-    return users[0];
+    return user[0];
   }
 }
