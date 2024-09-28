@@ -32,6 +32,16 @@
 $ npm install
 ```
 
+Create <strong>.env</strong>
+
+```bash
+DATABASE_URL=''
+
+JWT_ACCESS_TOKEN_SECRET=
+
+JWT_ACCESS_TOKEN_EXPIRATION_MS=
+```
+
 ## Compile and run the project
 
 ```bash
