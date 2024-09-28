@@ -41,7 +41,7 @@ export class UsersService {
 
   async getUsers() {
     const users = await this.database.select().from(schema.users);
-    return users.map(({ password, ...rest }) => rest);
+    return users.map(({ password, refreshToken, ...rest }) => rest);
   }
 
   async getUser(query: { email?: string; userId?: string }) {
@@ -59,6 +59,17 @@ export class UsersService {
 
     if (!user.length) throw new NotFoundException('User not found');
 
+    return user[0];
+  }
+
+  async updateUser(query: Partial<UserDto>, data: Partial<UserDto>) {
+    const user = await this.database
+      .update(schema.users)
+      .set(data)
+      .where(eq(schema.users.id, query.id))
+      .returning();
+
+    if (!user.length) throw new NotFoundException('User not found');
     return user[0];
   }
 }
