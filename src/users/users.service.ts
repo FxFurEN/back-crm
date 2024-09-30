@@ -8,8 +8,8 @@ import { hash } from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DB_CONNECTION } from 'src/database/db-connection';
+import { UserDto } from 'src/dtos/user.dto';
 import * as schema from '../database/schema/schema';
-import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {
