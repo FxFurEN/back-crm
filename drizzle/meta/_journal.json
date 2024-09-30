@@ -15,6 +15,13 @@
       "when": 1727558092562,
       "tag": "0001_hard_peter_quill",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1727695569412,
+      "tag": "0002_abnormal_landau",
+      "breakpoints": true
     }
   ]
 }
