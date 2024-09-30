@@ -1,9 +1,16 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
+import { randomBytes } from 'crypto';
 import { Response } from 'express';
 import { UserDto } from 'src/dtos/user.dto';
+import { RedisService } from 'src/redis/redis.service';
 import { UsersService } from 'src/users/users.service';
 import { TokenPayload } from './token-payload.interface';
 
@@ -13,6 +20,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly redisService: RedisService,
   ) {}
 
   async login(user: UserDto, response: Response) {
@@ -70,6 +78,63 @@ export class AuthService {
       secure: this.configService.get('NODE_ENV') === 'production',
       expires: expiresRefreshToken,
     });
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.usersService.getUser({ userId });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isPasswordMatching = await compare(currentPassword, user.password);
+    if (!isPasswordMatching) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    const hashedPassword = await hash(newPassword, 10);
+
+    await this.usersService.updateUser(
+      { id: userId },
+      { password: hashedPassword },
+    );
+
+    return { message: 'Password successfully changed' };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.usersService.getUser({ email });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const token = randomBytes(32).toString('hex');
+    await this.redisService.setToken(email, token, 15 * 60);
+    return token;
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const email = await this.redisService.getEmailByToken(token);
+    if (!email) {
+      throw new NotFoundException('Invalid or expired token');
+    }
+
+    const user = await this.usersService.getUser({ email });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const hashedPassword = await hash(newPassword, 10);
+    await this.usersService.updateUser(
+      { id: user.id },
+      { password: hashedPassword },
+    );
+    await this.redisService.deleteToken(token);
+    return { message: 'Password successfully reset' };
   }
 
   async verifyUser(email: string, password: string) {
