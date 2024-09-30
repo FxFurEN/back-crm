@@ -1,12 +1,11 @@
 import {
-  BadRequestException,
   ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { compare, hash } from 'bcryptjs';
+import { hash } from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Role } from 'src/auth/enums/role.enum';
@@ -98,39 +97,5 @@ export class UsersService {
       .execute();
 
     return { message: `Role updated to ${newRole} for user with ID ${userId}` };
-  }
-
-  async changePassword(
-    userId: string,
-    currentPassword: string,
-    newPassword: string,
-  ) {
-    const user = await this.database
-      .select()
-      .from(schema.users)
-      .where(eq(schema.users.id, userId))
-      .execute();
-
-    if (!user.length) {
-      throw new NotFoundException('User not found');
-    }
-
-    const foundUser = user[0];
-    const isPasswordMatching = await compare(
-      currentPassword,
-      foundUser.password,
-    );
-    if (!isPasswordMatching) {
-      throw new BadRequestException('Current password is incorrect');
-    }
-    const hashedPassword = await hash(newPassword, 10);
-
-    await this.database
-      .update(schema.users)
-      .set({ password: hashedPassword })
-      .where(eq(schema.users.id, userId))
-      .execute();
-
-    return { message: 'Password successfully changed' };
   }
 }
