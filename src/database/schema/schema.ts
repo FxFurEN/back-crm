@@ -1,5 +1,7 @@
 import { createId } from '@paralleldrive/cuid2';
-import { pgTable, text, varchar } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, text, varchar } from 'drizzle-orm/pg-core';
+
+export const userRoleEnum = pgEnum('user_role', ['ADMIN', 'USER']);
 
 export const users = pgTable('users', {
   id: varchar('id', { length: 256 }).primaryKey().$defaultFn(createId),
@@ -7,4 +9,5 @@ export const users = pgTable('users', {
   email: text('email').unique(),
   refreshToken: text('refresh_token').default(null),
   password: text('password'),
+  role: userRoleEnum('role').default('USER'),
 });

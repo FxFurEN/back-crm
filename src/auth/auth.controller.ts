@@ -1,6 +1,6 @@
 import { Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
-import { UserDto } from 'src/users/dto/user.dto';
+import { UserDto } from 'src/dtos/user.dto';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './current-user.decorator';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
