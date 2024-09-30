@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
 import { Response } from 'express';
-import { UserDto } from 'src/users/dto/user.dto';
+import { UserDto } from 'src/dtos/user.dto';
 import { UsersService } from 'src/users/users.service';
 import { TokenPayload } from './token-payload.interface';
 
@@ -38,6 +38,7 @@ export class AuthService {
 
     const tokenPayload: TokenPayload = {
       userId: user.id,
+      role: user.role,
     };
 
     const accessToken = this.jwtService.sign(tokenPayload, {
