@@ -5,8 +5,14 @@ import { Redis } from 'ioredis';
 export class RedisService {
   constructor(@Inject('REDIS_CLIENT') private readonly client: Redis) {}
 
-  async setToken(email: string, token: string, expiration: number) {
-    await this.client.set(token, email, 'EX', expiration);
+  async setToken(
+    type: string,
+    email: string,
+    token: string,
+    expiration: number,
+  ) {
+    const key = `${type}:${email}`;
+    await this.client.set(key, token, 'EX', expiration);
   }
 
   async getEmailByToken(token: string) {
