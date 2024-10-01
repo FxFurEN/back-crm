@@ -20,16 +20,13 @@ export class UsersService {
     private readonly database: NodePgDatabase<typeof schema>,
   ) {}
 
-  async create(dto: UserDto) {
-    const user = await this.database
-      .select()
-      .from(schema.users)
-      .where(eq(schema.users.email, dto.email))
-      .execute();
+  async createUser(dto: UserDto) {
+    const existingUser = await this.getUser({ email: dto.email });
 
-    if (user.length > 0) {
-      throw new ConflictException('email already use!');
+    if (existingUser) {
+      throw new ConflictException('Email already in use!');
     }
+
     const newUser = {
       ...dto,
       password: await hash(dto.password, 10),
@@ -37,7 +34,7 @@ export class UsersService {
 
     await this.database.insert(schema.users).values(newUser).execute();
 
-    const { ...result } = newUser;
+    const { password, ...result } = newUser;
     return result;
   }
 
@@ -59,9 +56,7 @@ export class UsersService {
 
     const user = await userQuery.execute();
 
-    if (!user.length) throw new NotFoundException('User not found');
-
-    return user[0];
+    return user.length ? user[0] : null;
   }
 
   async updateUser(query: Partial<UserDto>, data: Partial<UserDto>) {
