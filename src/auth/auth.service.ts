@@ -81,10 +81,9 @@ export class AuthService {
   }
 
   async register(userDto: UserDto, invitationToken: string) {
-    const storedEmail =
-      await this.redisService.getEmailByToken(invitationToken);
+    const tokenData = await this.redisService.getToken(invitationToken);
 
-    if (!storedEmail) {
+    if (!tokenData || tokenData.purpose !== 'invitation') {
       throw new BadRequestException('Invalid or expired invitation token');
     }
 
@@ -127,17 +126,17 @@ export class AuthService {
     }
 
     const token = randomBytes(32).toString('hex');
-    await this.redisService.setToken('forgot', email, token, 15 * 60);
+    await this.redisService.setToken(token, email, 'forgot_password', 15 * 60);
     return token;
   }
 
   async resetPassword(token: string, newPassword: string) {
-    const email = await this.redisService.getEmailByToken(token);
-    if (!email) {
+    const tokenData = await this.redisService.getToken(token);
+    if (!tokenData || tokenData.purpose !== 'forgot_password') {
       throw new NotFoundException('Invalid or expired token');
     }
 
-    const user = await this.usersService.getUser({ email });
+    const user = await this.usersService.getUser({ email: tokenData.email });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -189,10 +188,15 @@ export class AuthService {
       .update(data)
       .digest('hex');
 
+    const oldToken = await this.redisService.getTokenByEmail(admin.email);
+    if (oldToken) {
+      await this.redisService.deleteToken(oldToken);
+    }
+
     await this.redisService.setToken(
-      'invite',
-      admin.email,
       invitationToken,
+      admin.email,
+      'invitation',
       24 * 60 * 60,
     );
 
