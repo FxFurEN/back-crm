@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ChangePasswordDto } from 'src/dtos/change-password.dto';
+import { ForgotPasswordDto } from 'src/dtos/forgot-password.dto';
 import { UserDto } from 'src/dtos/user.dto';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './current-user.decorator';
@@ -66,8 +67,8 @@ export class AuthController {
   }
 
   @Post('forgot-password')
-  async forgotPassword(@Body('email') email: string) {
-    return this.authService.forgotPassword(email);
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto.email);
   }
 
   @Post('reset-password')

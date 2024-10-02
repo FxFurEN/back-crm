@@ -37,6 +37,11 @@ Create <strong>.env</strong>
 ```bash
 DATABASE_URL=''
 
+BASE_URL= # http://localhost:3000
+
+REDIS_HOST= #localhost
+REDIS_PORT= #6379
+
 JWT_ACCESS_TOKEN_SECRET=
 JWT_ACCESS_TOKEN_EXPIRATION_MS= #3600000
 
