@@ -81,14 +81,15 @@ export class AuthService {
   }
 
   async register(userDto: UserDto, invitationToken: string) {
-    const tokenData = await this.redisService.getToken(invitationToken);
+    const cleanToken = invitationToken.split('&')[0];
+    const tokenData = await this.redisService.getToken(cleanToken);
 
     if (!tokenData || tokenData.purpose !== 'invitation') {
       throw new BadRequestException('Invalid or expired invitation token');
     }
 
     const createdUser = await this.usersService.createUser(userDto);
-    await this.redisService.deleteToken(invitationToken);
+    await this.redisService.deleteToken(cleanToken);
 
     return createdUser;
   }
@@ -201,6 +202,6 @@ export class AuthService {
     );
 
     const baseUrl = this.configService.get<string>('BASE_URL');
-    return `${baseUrl}/auth/register?invitation=${invitationToken}&timestamp=${timestamp}`;
+    return `${baseUrl}/auth/register?invitation=${encodeURIComponent(invitationToken)}&timetamp=${encodeURIComponent(timestamp)}`;
   }
 }
