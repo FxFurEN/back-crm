@@ -10,9 +10,13 @@ import { RedisService } from './redis.service';
       useFactory: (configService: ConfigService) => {
         const host = configService.get<string>('REDIS_HOST');
         const port = configService.get<number>('REDIS_PORT');
+        const password = configService.get<string>('REDIS_PASSWORD');
+        const isTlsEnabled = configService.get<boolean>('REDIS_TLS', false);
         return new Redis({
           host,
           port,
+          ...(password ? { password } : {}),
+          ...(isTlsEnabled ? { tls: {} } : {}),
         });
       },
       inject: [ConfigService],
