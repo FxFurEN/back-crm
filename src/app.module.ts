@@ -7,6 +7,7 @@ import { RedisService } from './redis/redis.service';
 import { UsersController } from './users/users.controller';
 import { UsersModule } from './users/users.module';
 import { UsersService } from './users/users.service';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UsersService } from './users/users.service';
     UsersModule,
     AuthModule,
     RedisModule,
+    TasksModule,
   ],
   controllers: [UsersController],
   providers: [UsersService, RedisService],
