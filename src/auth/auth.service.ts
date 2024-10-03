@@ -7,7 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
-import { randomBytes } from 'crypto';
+import { createHmac, randomBytes } from 'crypto';
 import { Response } from 'express';
 import { UserDto } from 'src/dtos/user.dto';
 import { RedisService } from 'src/redis/redis.service';
@@ -80,6 +80,20 @@ export class AuthService {
     });
   }
 
+  async register(userDto: UserDto, invitationToken: string) {
+    const cleanToken = invitationToken.split('&')[0];
+    const tokenData = await this.redisService.getToken(cleanToken);
+
+    if (!tokenData || tokenData.purpose !== 'invitation') {
+      throw new BadRequestException('Invalid or expired invitation token');
+    }
+
+    const createdUser = await this.usersService.createUser(userDto);
+    await this.redisService.deleteToken(cleanToken);
+
+    return createdUser;
+  }
+
   async changePassword(
     userId: string,
     currentPassword: string,
@@ -113,17 +127,17 @@ export class AuthService {
     }
 
     const token = randomBytes(32).toString('hex');
-    await this.redisService.setToken(email, token, 15 * 60);
+    await this.redisService.setToken(token, email, 'forgot_password', 15 * 60);
     return token;
   }
 
   async resetPassword(token: string, newPassword: string) {
-    const email = await this.redisService.getEmailByToken(token);
-    if (!email) {
+    const tokenData = await this.redisService.getToken(token);
+    if (!tokenData || tokenData.purpose !== 'forgot_password') {
       throw new NotFoundException('Invalid or expired token');
     }
 
-    const user = await this.usersService.getUser({ email });
+    const user = await this.usersService.getUser({ email: tokenData.email });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -163,5 +177,31 @@ export class AuthService {
     } catch (err) {
       throw new UnauthorizedException('Refresh token is not valid.');
     }
+  }
+
+  async generateInvitation(adminId: string) {
+    const admin = await this.usersService.getUser({ userId: adminId });
+    const timestamp = Date.now().toString();
+    const data = `${admin.email}-${timestamp}`;
+
+    const secret = this.configService.get<string>('INVITATION_TOKEN_SECRET');
+    const invitationToken = createHmac('sha256', secret)
+      .update(data)
+      .digest('hex');
+
+    const oldToken = await this.redisService.getTokenByEmail(admin.email);
+    if (oldToken) {
+      await this.redisService.deleteToken(oldToken);
+    }
+
+    await this.redisService.setToken(
+      invitationToken,
+      admin.email,
+      'invitation',
+      24 * 60 * 60,
+    );
+
+    const baseUrl = this.configService.get<string>('BASE_URL');
+    return `${baseUrl}/auth/register?invitation=${encodeURIComponent(invitationToken)}&timetamp=${encodeURIComponent(timestamp)}`;
   }
 }
