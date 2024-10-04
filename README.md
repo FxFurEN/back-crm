@@ -42,6 +42,10 @@ BASE_URL= # http://localhost:3000
 REDIS_HOST= #localhost
 REDIS_PORT= #6379
 
+# if use remote db redis
+# REDIS_PASSWORD=
+# REDIS_TLS= #true
+
 JWT_ACCESS_TOKEN_SECRET=
 JWT_ACCESS_TOKEN_EXPIRATION_MS= #3600000
 
