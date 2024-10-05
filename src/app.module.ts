@@ -8,6 +8,9 @@ import { UsersController } from './users/users.controller';
 import { UsersModule } from './users/users.module';
 import { UsersService } from './users/users.service';
 import { TasksModule } from './tasks/tasks.module';
+import { CategoryTaskService } from './category_task/category_task.service';
+import { CategoryTaskController } from './category_task/category_task.controller';
+import { CategoryTaskModule } from './category_task/category_task.module';
 
 @Module({
   imports: [
@@ -17,8 +20,9 @@ import { TasksModule } from './tasks/tasks.module';
     AuthModule,
     RedisModule,
     TasksModule,
+    CategoryTaskModule,
   ],
-  controllers: [UsersController],
-  providers: [UsersService, RedisService],
+  controllers: [UsersController, CategoryTaskController],
+  providers: [UsersService, RedisService, CategoryTaskService],
 })
 export class AppModule {}
