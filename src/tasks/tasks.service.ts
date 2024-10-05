@@ -1,7 +1,14 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DB_CONNECTION } from 'src/database/db-connection';
+import { TaskDto } from 'src/dtos/task.dto';
 import * as schema from '../database/schema/schema';
 
 @Injectable()
@@ -11,7 +18,31 @@ export class TasksService {
     private readonly database: NodePgDatabase<typeof schema>,
   ) {}
 
-  async createTask(dto: { name: string; categoryId: string; price: number }) {
+  async createTask(dto: TaskDto) {
+    const categoryExists = await this.database
+      .select()
+      .from(schema.categories)
+      .where(eq(schema.categories.id, dto.categoryId))
+      .execute();
+
+    if (!categoryExists.length) {
+      throw new NotFoundException('Category not found');
+    }
+
+    if (dto.price <= 0) {
+      throw new BadRequestException('Price must be greater than 0');
+    }
+
+    const taskExists = await this.database
+      .select()
+      .from(schema.tasks)
+      .where(eq(schema.tasks.name, dto.name))
+      .execute();
+
+    if (taskExists.length) {
+      throw new ConflictException('Task with this name already exists');
+    }
+
     const newTask = {
       ...dto,
     };
