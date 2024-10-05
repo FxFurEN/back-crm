@@ -11,7 +11,6 @@ export class TasksService {
     private readonly database: NodePgDatabase<typeof schema>,
   ) {}
 
-  // Создание задачи
   async createTask(dto: { name: string; categoryId: string; price: number }) {
     const newTask = {
       ...dto,
@@ -22,13 +21,11 @@ export class TasksService {
     return newTask;
   }
 
-  // Получение всех задач
   async getTasks() {
     const tasks = await this.database.select().from(schema.tasks).execute();
     return tasks;
   }
 
-  // Получение одной задачи
   async getTaskById(taskId: string) {
     const task = await this.database
       .select()
@@ -43,7 +40,6 @@ export class TasksService {
     return task[0];
   }
 
-  // Обновление задачи
   async updateTask(taskId: string, dto: { name?: string; price?: number }) {
     const updatedTask = await this.database
       .update(schema.tasks)
@@ -59,7 +55,6 @@ export class TasksService {
     return updatedTask[0];
   }
 
-  // Удаление задачи
   async deleteTask(taskId: string) {
     const task = await this.database
       .delete(schema.tasks)
