@@ -12,7 +12,7 @@ import { Response } from 'express';
 import { UserDto } from 'src/dtos/user.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { UsersService } from 'src/users/users.service';
-import { TokenPayload } from './token-payload.interface';
+import { TokenPayload } from './interface/token-payload.interface';
 
 @Injectable()
 export class AuthService {

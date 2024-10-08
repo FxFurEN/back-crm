@@ -13,13 +13,13 @@ import { ChangePasswordDto } from 'src/dtos/change-password.dto';
 import { ForgotPasswordDto } from 'src/dtos/forgot-password.dto';
 import { UserDto } from 'src/dtos/user.dto';
 import { AuthService } from './auth.service';
-import { CurrentUser } from './current-user.decorator';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { Roles } from './decorators/roles.decorator';
 import { Role } from './enums/role.enum';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
-import { Roles } from './roles.decorator';
 
 @Controller('auth')
 export class AuthController {
